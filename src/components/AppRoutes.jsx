@@ -5,6 +5,8 @@ import FullscreenLayout from "../layouts/FullscreenLayout/FullscreenLayout";
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import Loading from "./Loading/Loading";
 import ErrorBoundary from "./ErrorBoundary/ErrorBoundary";
+import VerifyEmail from "@/pages/VerifyEmail/VerifyEmail";
+import VerifyOtp from "@/pages/VerifyOtp/VerifyOtp";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("../pages/Home/Home"));
@@ -78,10 +80,28 @@ const AppRoutes = () => {
                         }
                     />
                     <Route
+                        path="/verify-email"
+                        element={
+                            <AuthLayout>
+                                <VerifyEmail />
+                            </AuthLayout>
+                        }
+                    />
+                    
+                    <Route
                         path="/forgot-password"
                         element={
                             <AuthLayout>
                                 <ForgotPassword />
+                            </AuthLayout>
+                        }
+                    />
+
+                    <Route
+                        path="/forgot-password/verify-otp"
+                        element={
+                            <AuthLayout>
+                                <VerifyOtp />
                             </AuthLayout>
                         }
                     />
