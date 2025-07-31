@@ -2,11 +2,23 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TopicList, FeaturedPosts, PostList, Button } from "../../components";
 import styles from "./Home.module.scss";
+import { useDispatch, useSelector } from "react-redux";
+import fetchCurrentUser from "@/features/auth/authAsync";
+import { selectCurrentUser } from "@/features/auth/authSlice";
 
 const Home = () => {
     const [recentPosts, setRecentPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
 
+    const user = useSelector(selectCurrentUser);
+
+    useEffect(() => {
+        dispatch(fetchCurrentUser());
+    }, [dispatch]);
+    
+    console.log(user);
+    
     // Mock data - will be replaced with API calls later
     const mockTopics = [
         {

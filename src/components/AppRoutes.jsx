@@ -7,6 +7,7 @@ import Loading from "./Loading/Loading";
 import ErrorBoundary from "./ErrorBoundary/ErrorBoundary";
 import VerifyEmail from "@/pages/VerifyEmail/VerifyEmail";
 import VerifyOtp from "@/pages/VerifyOtp/VerifyOtp";
+import ChangePassword from "@/pages/ChangePassword/changePassword";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("../pages/Home/Home"));
@@ -72,6 +73,14 @@ const AppRoutes = () => {
                         }
                     />
                     <Route
+                        path="/change-password"
+                        element={
+                            <AuthLayout>
+                                <ChangePassword />
+                            </AuthLayout>
+                        }
+                    />
+                    <Route
                         path="/register"
                         element={
                             <AuthLayout>
@@ -113,7 +122,6 @@ const AppRoutes = () => {
                             </AuthLayout>
                         }
                     />
-
                     {/* 404 Route */}
                     <Route path="*" element={<NotFound />} />
                 </Routes>

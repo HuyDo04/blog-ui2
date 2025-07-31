@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Input, Button } from "../../components";
 import { login, resendVerification } from "@/services/auth.service";
 import styles from "./Login.module.scss";
+import { setToken } from "@/utils/httpRequest";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -62,7 +63,8 @@ const Login = () => {
     try {
       const result = await login(formData);
       console.log("Login success:", result);
-
+      setToken(result.access_token)
+      localStorage.setItem("refresh_token", result.refresh_token); 
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Login failed:", error);
@@ -87,7 +89,6 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
-  console.log(formData.email);
 
   const handleResendVerification = async () => {
     try {
@@ -95,7 +96,6 @@ const Login = () => {
       setResendMessage("");
         
       const res = await resendVerification(formData.email);
-      console.log("RES:", res);
       
       setResendMessage(
         res.message || "Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư."

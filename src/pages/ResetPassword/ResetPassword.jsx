@@ -58,8 +58,7 @@ console.log(formData);
     try {
 
       const res = await resetPassword({...formData, email});
-      console.log("RES:", res)
-      
+      console.log("res:", res)
       setMessage(res.message || "Đặt lại mật khẩu thành công.");
       // Redirect sang login sau 2s
       setTimeout(() => navigate("/login"), 2000);

@@ -3,21 +3,28 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input, Button } from "../../components";
 import { register } from "@/services/auth.service";
 import styles from "./Register.module.scss";
-console.log("register:", register);
 
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    username: "",  
     email: "",
     password: "",
     confirmPassword: "",
   });
+
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   const validateForm = () => {
     const newErrors = {};
+
+    if (!formData.username) {
+      newErrors.username = "Vui lòng nhập tên người dùng";
+    } else if (formData.username.length < 3) {
+      newErrors.username = "Tên người dùng phải có ít nhất 3 ký tự";
+    }
 
     if (!formData.email) {
       newErrors.email = "Vui lòng nhập email";
@@ -62,14 +69,14 @@ const Register = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    console.log("Submitting form data:", formData);
 
     try {
       const result = await register(formData);
-        
+      console.log("REsult:", result);
+      
+
       setSuccessMessage(result.message);
 
-      // Optional: Chuyển hướng sang login sau vài giây
       setTimeout(() => {
         navigate("/login", {
           replace: true,
@@ -96,6 +103,17 @@ const Register = () => {
       )}
 
       <form onSubmit={handleSubmit} className={styles.form}>
+
+        {/* ✅ Username input */}
+        <Input
+          label="Tên người dùng"
+          name="username"
+          value={formData.username}
+          onChange={handleInputChange}
+          error={errors.username}
+          placeholder="Nhập tên người dùng"
+        />
+
         <Input
           label="Email"
           type="email"
@@ -146,4 +164,3 @@ const Register = () => {
 };
 
 export default Register;
-

@@ -1,136 +1,129 @@
+
 import axios from "axios";
 
+// 🔧 Tạo instance httpRequest
 const httpRequest = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL,
-  
-})
-
-httpRequest.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-    } else {
-        delete config.headers["Authorization"];
-    }
-    return config;
+  baseURL: import.meta.env.VITE_BASE_URL,
+  withCredentials: true
 });
 
+// 🔑 Interceptor Request: thêm token nếu có
+httpRequest.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// 🔄 Refresh Token Logic
 let isRefreshing = false;
-const tokenListener = []
-function tokenSubscribe(listener) {
-    tokenListener.push(listener)
+const tokenListeners = [];
+
+function subscribeTokenRefresh(callback) {
+  tokenListeners.push(callback);
 }
 
-function onRefreshed() {
-    tokenListener.forEach((listener) => listener());
+function onRefreshed(newToken) {
+  tokenListeners.forEach((callback) => callback(newToken));
+  tokenListeners.length = 0;
 }
+
+// 🔧 Interceptor Response: xử lý 401 và refresh token
 httpRequest.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalConfig = error.config;
-        const refreshToken = localStorage.getItem("refresh_token");
-        const shouldRenewToken = error.response?.status === 401 && refreshToken;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-        if (shouldRenewToken) {
-            if (!isRefreshing) {
-                isRefreshing = true;
+    const refreshToken = localStorage.getItem("refresh_token");
+    const shouldRefresh =
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      refreshToken;
 
-                try {
-                    const res = await axios.post(
-                        `${import.meta.env.VITE_BASE_URL}/auth/refresh-token`,
-                        {
-                            refresh_token: refreshToken,
-                        }
-                    );
-                    const data = res.data.data;
+    if (shouldRefresh) {
+      originalRequest._retry = true; // ✅ Đánh dấu để tránh lặp vô hạn
 
-                    localStorage.setItem("token", data.access_token);
-                    localStorage.setItem("refresh_token", data.refresh_token);
+      if (!isRefreshing) {
+        isRefreshing = true;
 
-                    onRefreshed();
-                    isRefreshing = false;
+        try {
+          const res = await axios.post(
+            `${import.meta.env.VITE_BASE_URL}/refresh-token`,
+            { refresh_token: refreshToken }
+          );
 
-                    return httpRequest(originalConfig);
-                } catch (refreshError) {
-                    isRefreshing = false;
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("refresh_token");
+          const { access_token, refresh_token: newRefreshToken } = res.data;
 
-                    return Promise.reject(refreshError);
-                }
-            } else {
-                return new Promise((resolve) => {
-                    tokenSubscribe(() => {
-                        resolve(httpRequest(originalConfig));
-                    });
-                });
-            }
+          setToken(access_token);
+          localStorage.setItem("refresh_token", newRefreshToken);
+
+          onRefreshed(access_token);
+        } catch (refreshError) {
+          console.error("Refresh token failed:", refreshError);
+          clearToken();
+          window.location.href = "/login";
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
         }
-        return Promise.reject(error)
-    }
-)
+      }
 
+      // ⏳ Đợi token mới nếu đang refresh
+      return new Promise((resolve) => {
+        subscribeTokenRefresh((newToken) => {
+          originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+          resolve(httpRequest(originalRequest)); // 🔁 Gửi lại request ban đầu
+        });
+      });
+    }
+
+    // ❌ Nếu không thể refresh hoặc lỗi khác
+    return Promise.reject(error);
+  }
+);
+
+
+// ✅ Utils
 const send = async (method, url, data, config) => {
-    // const isPutOrPatch = ["put", "patch"].includes(method.toLowerCase());
-    // const effectiveMethod = isPutOrPatch ? "post" : method;
-    // const effectivePath = isPutOrPatch
-    //     ? `${url}${url.includes("?") ? "&" : "?"}_method=${method}`
-    //     : url;
+  const response = await httpRequest.request({
+    method,
+    url,
+    data,
+    ...config,
+  });
 
-    // const response = await httpRequest.request({
-    //     method: effectiveMethod,
-    //     url: effectivePath,
-    //     data,
-    //     ...config,
-    // });
-
-    const response = await httpRequest.request({
-        method,
-        url,
-        data,
-        ...config
-    })
-
-    if (response.status >= 200 && response.status < 400) {
-        return response.data;
-    }
+  return response.data;
 };
 
-export const get = (url,config) => {
-    return send("get", url,null, config)
-}
-
-
-export const post = (url,data,config) => {
-    return send("post", url,data,config)
-}
-
-export const put = (url,data,config) => {
-    return send("put", url,data,config)
-}
-
-export const patch = (url,data, config) => {
-    return send("patch", url, data, config)
-}
-
-export const del = (url,config) => {
-    return send("delete", url, null, config)
-}
+export const get = (url, config) => send("get", url, null, config);
+export const post = (url, data, config) => send("post", url, data, config);
+export const put = (url, data, config) => send("put", url, data, config);
+export const patch = (url, data, config) => send("patch", url, data, config);
+export const del = (url, config) => send("delete", url, null, config);
 
 export const setToken = (token) => {
   if (token) {
     httpRequest.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     localStorage.setItem("token", token);
   } else {
+    delete httpRequest.defaults.headers.common["Authorization"];
     localStorage.removeItem("token");
   }
 };
 
+export const clearToken = () => {
+  delete httpRequest.defaults.headers.common["Authorization"];
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh_token");
+};
+
 export default {
-    get,
-    post,
-    put,
-    patch,
-    del,
-    setToken
-}
+  get,
+  post,
+  put,
+  patch,
+  del,
+  setToken,
+  clearToken,
+};
