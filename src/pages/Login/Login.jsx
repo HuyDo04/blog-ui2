@@ -4,9 +4,13 @@ import { Input, Button } from "../../components";
 import { login, resendVerification } from "@/services/auth.service";
 import styles from "./Login.module.scss";
 import { setToken } from "@/utils/httpRequest";
+import { loginSuccess } from "@/features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import fetchCurrentUser from "@/features/auth/authAsync";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -61,11 +65,21 @@ const Login = () => {
     setShowResend(false);
 
     try {
+      // 1. Gọi API login
       const result = await login(formData);
       console.log("Login success:", result);
-      setToken(result.access_token)
-      localStorage.setItem("refresh_token", result.refresh_token); 
+
+      // 2. Lưu token vào Redux & localStorage
+      dispatch(loginSuccess(result.access_token));
+      setToken(result.access_token); // Set token cho httpRequest
+      localStorage.setItem("refresh_token", result.refresh_token);
+
+      // 3. Gọi API lấy user
+      await dispatch(fetchCurrentUser()).unwrap();
+
+      // 4. Điều hướng khi đã lấy user thành công
       navigate("/", { replace: true });
+
     } catch (error) {
       console.error("Login failed:", error);
 

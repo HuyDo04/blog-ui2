@@ -34,6 +34,8 @@ const ResetPassword = lazy(() =>
     import("../pages/ResetPassword/ResetPassword")
 );
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+const CreatePost = lazy(() => import("../pages/CreatePost/CreatePost"));
+
 
 const AppRoutes = () => {
     return (
@@ -44,7 +46,7 @@ const AppRoutes = () => {
                     <Route path="/" element={<AppLayout />}>
                         <Route index element={<Home />} />
                         <Route path="topics" element={<TopicsListing />} />
-                        <Route path="topics/:slug" element={<Topic />} />
+                        <Route path="topics/by-slug/:slug" element={<Topic />} />
                         <Route path="blog/:slug" element={<BlogDetail />} />
                         <Route path="profile/:username" element={<Profile />} />
                         <Route
@@ -54,6 +56,7 @@ const AppRoutes = () => {
                         <Route path="my-posts" element={<MyPosts />} />
                         <Route path="bookmarks" element={<Bookmarks />} />
                         <Route path="settings" element={<Settings />} />
+                        <Route path="create-post" element={<CreatePost />} />
                     </Route>
 
                     {/* Fullscreen Layout Routes */}

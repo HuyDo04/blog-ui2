@@ -14,7 +14,7 @@ const LogoutButton = ({ className = "", onLogout }) => {
                 await httpRequest.post("/logout", { refresh_token: refreshToken });
             }
             // Xoá token ở localStorage
-            localStorage.removeItem("access_token");
+            localStorage.removeItem("token");
             localStorage.removeItem("refresh_token");
             // Dispatch action logout nếu dùng redux
             dispatch(logout());

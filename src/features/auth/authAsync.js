@@ -4,6 +4,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 const fetchCurrentUser = createAsyncThunk("auth/getCurrentUser",
     async () => {
         const user = await getCurrentUser();
+        
         return user;
     }
 );

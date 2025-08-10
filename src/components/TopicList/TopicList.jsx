@@ -1,11 +1,16 @@
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import Badge from "../Badge/Badge";
 import EmptyState from "../EmptyState/EmptyState";
 import FallbackImage from "../FallbackImage/FallbackImage";
 import styles from "./TopicList.module.scss";
 
-const TopicList = ({ topics = [], loading = false, className, ...props }) => {
+const TopicList = ({ 
+    topics = [], 
+    loading = false, 
+    className,
+    onTopicClick,
+    ...props 
+}) => {
     if (loading) {
         return (
             <div
@@ -20,7 +25,6 @@ const TopicList = ({ topics = [], loading = false, className, ...props }) => {
             </div>
         );
     }
-
     if (!topics.length) {
         return (
             <div
@@ -35,15 +39,22 @@ const TopicList = ({ topics = [], loading = false, className, ...props }) => {
             </div>
         );
     }
-
     return (
         <div className={`${styles.topicList} ${className || ""}`} {...props}>
             <div className={styles.grid}>
                 {topics.map((topic) => (
-                    <Link
+                    <div
                         key={topic.id}
-                        to={`/topics/${topic.slug}`}
                         className={styles.topicCard}
+                        onClick={() => onTopicClick?.(topic.slug)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                onTopicClick?.(topic.slug);
+                            }
+                        }}
                     >
                         <div className={styles.cardContent}>
                             {/* Topic Icon/Image */}
@@ -62,17 +73,14 @@ const TopicList = ({ topics = [], loading = false, className, ...props }) => {
                                     )}
                                 </div>
                             )}
-
                             {/* Topic Name */}
                             <h3 className={styles.topicName}>{topic.name}</h3>
-
                             {/* Topic Description */}
                             {topic.description && (
                                 <p className={styles.description}>
                                     {topic.description}
                                 </p>
                             )}
-
                             {/* Post Count */}
                             <div className={styles.meta}>
                                 <Badge variant="secondary" size="sm">
@@ -80,13 +88,12 @@ const TopicList = ({ topics = [], loading = false, className, ...props }) => {
                                 </Badge>
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 ))}
             </div>
         </div>
     );
 };
-
 TopicList.propTypes = {
     topics: PropTypes.arrayOf(
         PropTypes.shape({
@@ -101,6 +108,6 @@ TopicList.propTypes = {
     ),
     loading: PropTypes.bool,
     className: PropTypes.string,
+    onTopicClick: PropTypes.func,
 };
-
 export default TopicList;

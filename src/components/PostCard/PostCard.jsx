@@ -327,7 +327,7 @@ PostCard.propTypes = {
     title: PropTypes.string.isRequired,
     excerpt: PropTypes.string,
     author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
         avatar: PropTypes.string,
         username: PropTypes.string,
     }).isRequired,

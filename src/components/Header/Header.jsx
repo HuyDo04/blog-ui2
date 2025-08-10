@@ -19,7 +19,7 @@ const Header = () => {
 
     // Lấy user từ redux
     const user = useSelector(selectCurrentUser);
-
+    
     // Mock notifications data
     const mockNotifications = [
         {

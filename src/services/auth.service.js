@@ -9,7 +9,6 @@ export const register = async (data) => {
 // Verify Email
 export const verifyEmail = async (token) => {
     const response = await httpRequest.get(`/verify-email?token=${token}`)
-    console.log("Reponse:", response);
     return response
 }
 
@@ -32,7 +31,6 @@ export const resendVerification = async (email) => {
       "Content-Type": "application/json",
     },
   });
-  console.log("Resend verification response:", response);
   return response;
 };
 

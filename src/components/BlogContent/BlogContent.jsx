@@ -4,6 +4,7 @@ import Badge from "../Badge/Badge";
 import FallbackImage from "../FallbackImage/FallbackImage";
 import styles from "./BlogContent.module.scss";
 
+// Nhận trực tiếp các props riêng lẻ, bao gồm cả topicId
 const BlogContent = ({
     title,
     content,
@@ -12,27 +13,29 @@ const BlogContent = ({
     updatedAt,
     readTime,
     topic,
-    tags = [],
+    topicId,
+    authorId,
+    createdAt, // <--- ĐÃ THÊM: Tách topicId ra khỏi props
     featuredImage,
     loading = false,
     className,
-    ...props
+    ...props // props bây giờ sẽ không chứa topicId nữa
 }) => {
     const formatDate = (dateString) => {
+        if (!dateString) return "";
         const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", {
+        return date.toLocaleDateString("vi-VN", {
             year: "numeric",
             month: "long",
             day: "numeric",
         });
     };
-
-    if (loading) {
+    
+    
+    if (loading || !title) {
         return (
-            <article
-                className={`${styles.blogContent} ${className || ""}`}
-                {...props}
-            >
+            // Thẻ article sẽ không còn nhận được prop topicId không hợp lệ
+            <article className={`${styles.blogContent} ${className || ""}`} {...props}>
                 <div className={styles.skeleton}>
                     <div className={styles.skeletonImage} />
                     <div className={styles.skeletonHeader}>
@@ -50,11 +53,8 @@ const BlogContent = ({
     }
 
     return (
-        <article
-            className={`${styles.blogContent} ${className || ""}`}
-            {...props}
-        >
-            {/* Featured Image */}
+        // Thẻ article sẽ không còn nhận được prop topicId không hợp lệ
+        <article className={`${styles.blogContent} ${className || ""}`} {...props}>
             {featuredImage && (
                 <div className={styles.imageContainer}>
                     <FallbackImage
@@ -65,57 +65,45 @@ const BlogContent = ({
                 </div>
             )}
 
-            {/* Article Header */}
             <header className={styles.header}>
-                {/* Topic Badge */}
-                {topic && (
+                {topic?.name && (
                     <div className={styles.topicBadge}>
                         <Badge variant="primary" size="md">
-                            {topic}
+                            {topic.name}
                         </Badge>
                     </div>
                 )}
 
-                {/* Title */}
                 <h1 className={styles.title}>{title}</h1>
 
-                {/* Meta Information */}
                 <div className={styles.meta}>
                     <div className={styles.author}>
                         {author?.avatar && (
                             <FallbackImage
                                 src={author.avatar}
-                                alt={author.name}
+                                alt={author.name || author.username}
                                 className={styles.authorAvatar}
                             />
                         )}
                         <div className={styles.authorInfo}>
                             <Link
-                                to={`/profile/${
-                                    author?.username ||
-                                    author?.name
-                                        ?.toLowerCase()
-                                        .replace(/\s+/g, "-")
-                                }`}
+                                to={`/p/${author?.username}`}
                                 className={styles.authorName}
                             >
-                                {author?.name}
+                                {author?.name || author?.username}
                             </Link>
                             <div className={styles.dateInfo}>
-                                <time
-                                    dateTime={publishedAt}
-                                    className={styles.publishDate}
-                                >
+                                <time dateTime={publishedAt} className={styles.publishDate}>
                                     {formatDate(publishedAt)}
                                 </time>
                                 {updatedAt && updatedAt !== publishedAt && (
                                     <span className={styles.updateInfo}>
-                                        • Updated {formatDate(updatedAt)}
+                                        • Cập nhật {formatDate(updatedAt)}
                                     </span>
                                 )}
-                                {readTime && (
+                                {readTime > 0 && (
                                     <span className={styles.readTime}>
-                                        • {readTime} min read
+                                        • {readTime} phút đọc
                                     </span>
                                 )}
                             </div>
@@ -124,7 +112,6 @@ const BlogContent = ({
                 </div>
             </header>
 
-            {/* Article Content */}
             <div className={styles.content}>
                 {typeof content === "string" ? (
                     <div
@@ -135,43 +122,26 @@ const BlogContent = ({
                     content
                 )}
             </div>
-
-            {/* Tags */}
-            {tags.length > 0 && (
-                <footer className={styles.footer}>
-                    <div className={styles.tags}>
-                        <span className={styles.tagsLabel}>Tags:</span>
-                        <div className={styles.tagsList}>
-                            {tags.map((tag, index) => (
-                                <Badge
-                                    key={index}
-                                    variant="secondary"
-                                    size="sm"
-                                >
-                                    {tag}
-                                </Badge>
-                            ))}
-                        </div>
-                    </div>
-                </footer>
-            )}
         </article>
     );
 };
 
+// Cập nhật PropTypes để khớp với các props riêng lẻ
 BlogContent.propTypes = {
-    title: PropTypes.string.isRequired,
-    content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
+    title: PropTypes.string,
+    content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
     author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        avatar: PropTypes.string,
+        name: PropTypes.string,
         username: PropTypes.string,
-    }).isRequired,
-    publishedAt: PropTypes.string.isRequired,
+        avatar: PropTypes.string,
+    }),
+    publishedAt: PropTypes.string,
     updatedAt: PropTypes.string,
     readTime: PropTypes.number,
-    topic: PropTypes.string,
-    tags: PropTypes.arrayOf(PropTypes.string),
+    topic: PropTypes.shape({
+        name: PropTypes.string,
+    }),
+    topicId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // <--- ĐÃ THÊM
     featuredImage: PropTypes.string,
     loading: PropTypes.bool,
     className: PropTypes.string,

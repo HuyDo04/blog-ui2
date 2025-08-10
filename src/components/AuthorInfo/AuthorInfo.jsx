@@ -191,11 +191,11 @@ const AuthorInfo = ({
 
 AuthorInfo.propTypes = {
     author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
         username: PropTypes.string,
         title: PropTypes.string,
         bio: PropTypes.string,
-        avatar: PropTypes.string.isRequired,
+        avatar: PropTypes.string,
         social: PropTypes.shape({
             twitter: PropTypes.string,
             github: PropTypes.string,

@@ -20,26 +20,6 @@
     }
 }
 
-.topicCard {
-    @include card-base;
-    @include card-hover;
-    padding: 0;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: all $transition-base;
-
-    &:hover {
-        text-decoration: none;
-        color: inherit;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $primary-500;
-        outline-offset: 2px;
-    }
-}
-
 .cardContent {
     padding: $spacing-6;
     display: flex;
@@ -153,5 +133,26 @@
     }
     100% {
         background-position: 200% 0;
+    }
+}
+
+
+.topicCard {
+    @include card-base;
+    @include card-hover;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    display: block;
+    transition: all $transition-base;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-500;
+        outline-offset: 2px;
     }
 }

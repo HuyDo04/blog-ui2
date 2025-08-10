@@ -1,20 +1,29 @@
-import { createSlice } from '@reduxjs/toolkit'
-import fetchCurrentUser from './authAsync';
+import { createSlice } from "@reduxjs/toolkit";
+import fetchCurrentUser from "./authAsync";
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState: {
+    comments: [],
     currentUser: null,
-    isLoading: true
+    token: localStorage.getItem("token") || null,
+    isLoading: false,
   },
   reducers: {
+    loginSuccess(state, action) {
+      const token = action.payload;
+      state.token = token;
+      localStorage.setItem("token", token);
+    },
     logout(state) {
       state.currentUser = null;
+      state.token = null;
       state.isLoading = false;
+      localStorage.removeItem("token");
     },
     setUser(state, action) {
       state.currentUser = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -28,10 +37,18 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.rejected, (state) => {
         state.currentUser = null;
         state.isLoading = false;
+        state.token = null;
+        localStorage.removeItem("token");
       });
-  }
+  },
 });
-export const { logout, setUser } = authSlice.actions;
+
+export const { loginSuccess, logout, setUser, setComments, addComment } = authSlice.actions;
+
 export default authSlice.reducer;
+
+// Selectors
 export const selectCurrentUser = (state) => state.auth.currentUser;
 export const selectUserLoading = (state) => state.auth.isLoading;
+export const selectToken = (state) => state.auth.token;
+// Comment

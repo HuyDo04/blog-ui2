@@ -10,6 +10,7 @@ const httpRequest = axios.create({
 // 🔑 Interceptor Request: thêm token nếu có
 httpRequest.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
+  
   if (token) {
     config.headers["Authorization"] = `Bearer ${token}`;
   }
@@ -29,7 +30,7 @@ function onRefreshed(newToken) {
   tokenListeners.length = 0;
 }
 
-// 🔧 Interceptor Response: xử lý 401 và refresh token
+// Interceptor Response: xử lý 401 và refresh token
 httpRequest.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -42,7 +43,7 @@ httpRequest.interceptors.response.use(
       refreshToken;
 
     if (shouldRefresh) {
-      originalRequest._retry = true; // ✅ Đánh dấu để tránh lặp vô hạn
+      originalRequest._retry = true; // Đánh dấu để tránh lặp vô hạn
 
       if (!isRefreshing) {
         isRefreshing = true;
@@ -69,22 +70,22 @@ httpRequest.interceptors.response.use(
         }
       }
 
-      // ⏳ Đợi token mới nếu đang refresh
+      //  Đợi token mới nếu đang refresh
       return new Promise((resolve) => {
         subscribeTokenRefresh((newToken) => {
           originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-          resolve(httpRequest(originalRequest)); // 🔁 Gửi lại request ban đầu
+          resolve(httpRequest(originalRequest)); //  Gửi lại request ban đầu
         });
       });
     }
 
-    // ❌ Nếu không thể refresh hoặc lỗi khác
+    //  Nếu không thể refresh hoặc lỗi khác
     return Promise.reject(error);
   }
 );
 
 
-// ✅ Utils
+//  Utils
 const send = async (method, url, data, config) => {
   const response = await httpRequest.request({
     method,

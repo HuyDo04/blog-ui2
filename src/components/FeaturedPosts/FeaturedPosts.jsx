@@ -24,6 +24,7 @@ const FeaturedPosts = ({
             </section>
         );
     }
+    
 
     if (!posts.length) {
         return (
@@ -44,6 +45,7 @@ const FeaturedPosts = ({
     const displayPosts = posts.slice(0, maxPosts);
 
     return (
+       
         <section
             className={`${styles.featuredPosts} ${className || ""}`}
             {...props}
@@ -51,26 +53,29 @@ const FeaturedPosts = ({
             {showTitle && <h2 className={styles.title}>{title}</h2>}
 
             <div className={styles.postsGrid}>
-                {displayPosts.map((post, index) => (
-                    <div
-                        key={post.id || post.slug}
-                        className={`${styles.postItem} ${
-                            index === 0 ? styles.featured : ""
-                        }`}
-                    >
-                        <PostCard
-                            title={post.title}
-                            excerpt={post.excerpt}
-                            author={post.author}
-                            publishedAt={post.publishedAt}
-                            readTime={post.readTime}
-                            topic={post.topic}
-                            slug={post.slug}
-                            featuredImage={post.featuredImage}
-                        />
-                    </div>
-                ))}
-            </div>
+            {displayPosts.map((post, index) => (
+    <div
+        key={post.id || post.slug}
+        className={`${styles.postItem} ${
+            index === 0 ? styles.featured : ""
+        }`}
+    >
+        <PostCard
+            title={post.title}
+            excerpt={post.excerpt}
+            author={{
+                name:post.author.username,
+                avatar: post.author.avatar,
+            }}
+            publishedAt={post.publishedAt}
+            readTime={post.readTime}
+            topic= {post.topic?.name ?? "Chưa xác định"}
+            slug={post.slug}
+            featuredImage={post.featuredImage}
+        />
+    </div>
+))}
+        </div>
         </section>
     );
 };

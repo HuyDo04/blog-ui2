@@ -75,7 +75,7 @@ PostList.propTypes = {
             title: PropTypes.string.isRequired,
             excerpt: PropTypes.string,
             author: PropTypes.shape({
-                name: PropTypes.string.isRequired,
+                username:PropTypes.string,
                 avatar: PropTypes.string,
             }).isRequired,
             publishedAt: PropTypes.string.isRequired,

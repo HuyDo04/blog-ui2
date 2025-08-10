@@ -2,9 +2,9 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import CommentItem from '../CommentItem/CommentItem';
 import Button from '../Button/Button';
-import Input from '../Input/Input';
 import EmptyState from '../EmptyState/EmptyState';
 import styles from './CommentSection.module.scss';
+
 
 const CommentSection = ({
   comments = [],
@@ -20,7 +20,7 @@ const CommentSection = ({
 }) => {
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || isSubmitting) return;
@@ -38,15 +38,15 @@ const CommentSection = ({
     }
   };
 
-  const handleReply = async (parentId, content) => {
-    if (onReplyComment) {
-      try {
-        await onReplyComment(parentId, content);
-      } catch (error) {
-        console.error('Failed to reply to comment:', error);
-      }
-    }
-  };
+  // const handleReply = async (parentId, content) => {
+  //   if (!onReplyComment) return;
+
+  //   try {
+  //     await onReplyComment(parentId, content);
+  //   } catch (error) {
+  //     console.error('Failed to reply to comment:', error);
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -121,7 +121,8 @@ const CommentSection = ({
             <CommentItem
               key={comment.id}
               comment={comment}
-              onReply={isAuthenticated ? handleReply : undefined}
+              depth={1}
+              onReply={isAuthenticated ? onReplyComment : undefined}
               onLike={isAuthenticated ? onLikeComment : undefined}
               onEdit={isAuthenticated ? onEditComment : undefined}
               onDelete={isAuthenticated ? onDeleteComment : undefined}
@@ -148,8 +149,9 @@ CommentSection.propTypes = {
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        avatar: PropTypes.string.isRequired,
+        name: PropTypes.string,
+        username: PropTypes.string,
+        avatar: PropTypes.string,
       }).isRequired,
       content: PropTypes.string.isRequired,
       createdAt: PropTypes.string.isRequired,

@@ -23,7 +23,6 @@ const VerifyOtp = () => {
     } else if (otp.length !== 6) {
       newErrors.otp = "OTP phải gồm 6 chữ số.";
     }
-    console.log(newErrors);
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
