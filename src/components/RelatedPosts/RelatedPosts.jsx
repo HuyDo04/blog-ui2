@@ -11,6 +11,7 @@ const RelatedPosts = ({
   ...props
 }) => {
   const displayPosts = posts.slice(0, maxPosts);
+  console.log('displayPosts:', displayPosts);
 
   if (loading) {
     return (
@@ -46,6 +47,7 @@ const RelatedPosts = ({
           <PostCard
             key={post.id}
             {...post}
+            topic={typeof post.topic === "object" ? post.topic?.name : post.topic}
             compact
           />
         ))}
@@ -57,17 +59,25 @@ const RelatedPosts = ({
 RelatedPosts.propTypes = {
   posts: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      title: PropTypes.string,
       excerpt: PropTypes.string,
       featuredImage: PropTypes.string,
       author: PropTypes.shape({
-        name: PropTypes.string.isRequired,
+        username: PropTypes.string,
         avatar: PropTypes.string,
       }),
-      publishedAt: PropTypes.string.isRequired,
+      publishedAt: PropTypes.string,
       readTime: PropTypes.number,
-      topic: PropTypes.string,
+      topic: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.shape({
+          id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+          name: PropTypes.string,
+          slug: PropTypes.string,
+          icon: PropTypes.string
+        })
+      ]),
     })
   ),
   loading: PropTypes.bool,

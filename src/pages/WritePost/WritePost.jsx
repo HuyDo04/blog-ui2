@@ -30,6 +30,7 @@ const WritePost = () => {
   const currentUser = useSelector(selectCurrentUser);
 
   const [formData, setFormData] = useState({
+    _id: null, // Add this for storing post ID
     title: "",
     slug: "",
     excerpt: "",
@@ -41,6 +42,7 @@ const WritePost = () => {
 
   const [featuredImageFile, setFeaturedImageFile] = useState(null);
   const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
+  const [existingFeaturedImageUrl, setExistingFeaturedImageUrl] = useState(null); // New state
   const [readTime, setReadTime] = useState(0);
   const [existingMedia, setExistingMedia] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -48,8 +50,12 @@ const WritePost = () => {
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
 
   const headerRef = useRef(null);
+
+  // Extract base URL without API prefix
+  const backendBaseUrl = import.meta.env.VITE_BASE_URL.split('/api')[0];
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -64,22 +70,30 @@ const WritePost = () => {
       const fetchPost = async () => {
         try {
           const post = await getPostBySlug(slug);
+          if (post.authorId !== currentUser?.id) {
+            setIsAuthorized(false);
+            navigate("/404"); // Or a dedicated /unauthorized page
+            return;
+          }
+          console.log("Fetched post for editing:", post.id); // Add this line
+          console.log("post.featuredImage (raw):", post.featuredImage); // Debug log
           setFormData({
+            _id: post.id, // Store the actual ID
             title: post.title || "",
             slug: post.slug || "",
             excerpt: post.excerpt || "",
-            content: post.content || "",
+            content: post.content || "",  
             topicId: post.topicId || null,
             authorId: post.authorId || null,
             featuredImage: post.featuredImage || null,
           });
           if (post.featuredImage) {
-            // Giả sử backend phục vụ thư mục 'public' một cách tĩnh
-            // và đường dẫn được lưu là 'public\\uploads\\posts\\image.png'
-            const imageUrl = `/${post.featuredImage.replace(/\\/g, '/').replace('public/', '')}`;
-            setFeaturedImagePreview(imageUrl);
+            // Construct absolute URL using the extracted backendBaseUrl
+            const imageUrl = `${backendBaseUrl}/${post.featuredImage.replace(/\\/g, '/').replace('public/', '')}`;
+            setExistingFeaturedImageUrl(imageUrl); // Set existing image URL
           }
           setReadTime(post.readTime || 0);
+          console.log("Giá trị của post.media:", post.media); // Add this line
           setExistingMedia(post.media || []);
         } catch (err) {
           console.error("Error loading post:", err);
@@ -92,7 +106,7 @@ const WritePost = () => {
         setFormData((prev) => ({ ...prev, authorId: currentUser.id }));
       }
     }
-  }, [isEditing, slug, currentUser, navigate]);
+  }, [isEditing, slug, currentUser, navigate, backendBaseUrl]); // Add backendBaseUrl to dependencies
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,7 +148,10 @@ const WritePost = () => {
     const file = e.target.files[0];
     if (file) {
       setFeaturedImageFile(file);
-      setFeaturedImagePreview(URL.createObjectURL(file));
+      setFeaturedImagePreview(URL.createObjectURL(file)); // Only set preview for new file
+    } else {
+      setFeaturedImageFile(null);
+      setFeaturedImagePreview(null); // Clear preview if no file selected
     }
   };
 
@@ -149,6 +166,12 @@ const WritePost = () => {
 
   const handleSave = async (isPublished = false) => {
     if (!validateForm()) return;
+
+    if (isEditing && !formData._id) {
+      console.error("Error: Post ID is missing for update operation.");
+      // Optionally, show a user-friendly message or disable the save button until data is loaded.
+      return;
+    }
 
     setSaving(true);
 
@@ -166,23 +189,44 @@ const WritePost = () => {
     // Nối tệp ảnh nếu người dùng đã chọn ảnh mới
     if (featuredImageFile) {
       postFormData.append('featuredImage', featuredImageFile);
+    } else if (formData.featuredImage) {
+      // If no new file is selected but there was an existing image, append the existing image URL
+      postFormData.append('featuredImage', formData.featuredImage);
     }
 
     try {
       let response;
       if (isEditing) {
-        response = await updatePost(slug, postFormData);
+        response = await updatePost(formData._id, postFormData); // Use _id here
       } else {
         response = await createPost(postFormData);
       }
 
-      navigate(`/post/${response.post.slug}`);
+      navigate(`/blog/${response.post.slug}`);
     } catch (error) {
       console.error("Error saving post:", error);
     } finally {
       setSaving(false);
     }
   };
+
+  const displayImage = featuredImagePreview || (isEditing && existingFeaturedImageUrl && !featuredImageFile ? existingFeaturedImageUrl : null);
+
+  if (!isAuthorized) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <h1>Unauthorized</h1>
+          <p>You are not authorized to edit this post.</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log("isEditing:", isEditing); // Debug log
+  console.log("existingFeaturedImageUrl:", existingFeaturedImageUrl); // Debug log
+  console.log("featuredImageFile:", featuredImageFile); // Debug log
+  console.log("displayImage:", displayImage); // Debug log
 
   return (
     <div className={styles.container}>
@@ -209,6 +253,7 @@ const WritePost = () => {
                 error={errors.slug}
                 required
                 fullWidth
+                readOnly // Add this line
               />
 
               <Input
@@ -221,7 +266,24 @@ const WritePost = () => {
               />
 
               <div className={styles.formGroup}>
-                <label htmlFor="featuredImage">Featured Image</label>
+              <label
+  htmlFor="featuredImage"
+  style={{
+    display: 'inline-block',
+    padding: '8px 16px',
+    border: '2px solid #007bff',
+    borderRadius: '4px',
+    backgroundColor: '#007bff',
+    color: 'white',
+    cursor: 'pointer',
+    userSelect: 'none',
+    fontWeight: '500',
+    textAlign: 'center',
+  }}
+>
+  Featured Image
+</label>
+
                 <input
                   id="featuredImage"
                   type="file"
@@ -229,10 +291,10 @@ const WritePost = () => {
                   onChange={handleImageChange}
                   className={styles.fileInput}
                 />
-                {featuredImagePreview && (
+                {displayImage && (
                   <div className={styles.imagePreview} style={{ marginTop: '1rem' }}>
                     <p>Preview:</p>
-                    <img src={featuredImagePreview} alt="Featured Preview" style={{ maxWidth: '200px', height: 'auto', marginTop: '0.5rem', border: '1px solid #ddd', padding: '5px' }} />
+                    <img src={displayImage} alt="Featured Preview" style={{ maxWidth: '200px', height: 'auto', marginTop: '0.5rem', border: '1px solid #ddd', padding: '5px' }} />
                   </div>
                 )}
               </div>
@@ -240,6 +302,7 @@ const WritePost = () => {
               <div className={styles.formGroup}>
                 <label>Topic *</label>
                 <select
+                  className={styles.topicSelect}
                   value={formData.topicId || ""}
                   onChange={(e) =>
                     setFormData((prev) => ({
@@ -260,7 +323,7 @@ const WritePost = () => {
                 )}
               </div>
 
-              {existingMedia.length > 0 && (
+              {Array.isArray(existingMedia) && existingMedia.length > 0 && (
                 <div className={styles.previewContainer}>
                   {existingMedia.map((url, idx) => (
                     <div key={`existing-${idx}`} className={styles.previewItem}>

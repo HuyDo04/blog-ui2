@@ -8,7 +8,7 @@ import {
     Loading,
 } from "../../components";
 import styles from "./BlogDetail.module.scss";
-import { getPostBySlug } from "@/services/post.service";
+import { getPostBySlug, getPostsByTopicAndExcludePost } from "@/services/post.service";
 import { getUserById } from "@/services/user.service";
 
 import {
@@ -42,6 +42,7 @@ const BlogDetail = () => {
     const [likingInProgress, setLikingInProgress] = useState(false);
     const [bookmarkingInProgress, setBookmarkingInProgress] = useState(false);
     const [isAuthenticated] = useState(true);
+    const [relatedPosts, setRelatedPosts] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -59,6 +60,14 @@ const BlogDetail = () => {
                 };
                 setPost(fullPost);
                 setLikes(postRes.likes || 0);
+
+                // Fetch related posts
+                if (fullPost.topicId && fullPost.id) {
+                    const related = await getPostsByTopicAndExcludePost(fullPost.topicId, fullPost.id);
+                    console.log("related:", related);
+                    
+                    setRelatedPosts(related);
+                }
 
                 const commentRes = await getCommentsByPost(postRes.id);
                 dispatch(setComments(commentRes));
@@ -125,7 +134,6 @@ const BlogDetail = () => {
         if (likingInProgress) return;
         setLikingInProgress(true);
         setIsLiked((prev) => !prev);
-        setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
         setLikingInProgress(false);
     };
 
@@ -179,7 +187,7 @@ const BlogDetail = () => {
             </div>
 
             <div className={styles.contentSection}>
-                <RelatedPosts posts={[]} />
+                <RelatedPosts posts={relatedPosts} />
             </div>
 
             <div className={styles.contentSection}>

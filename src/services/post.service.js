@@ -26,6 +26,11 @@ export const getPostsByUserId = async (userId) => {
     return await httpRequest.get(`/users/${userId}/posts`);
 };
 
+// Get posts by topic ID, excluding a specific post ID
+export const getPostsByTopicAndExcludePost = async (topicId, excludePostId, limit = 3) => {
+    return await httpRequest.get(`/posts/related?topicId=${topicId}&excludePostId=${excludePostId}&limit=${limit}`);
+};
+
 // Create post
 export const createPost = async (postData) => {
     const dataToSend = postData instanceof FormData ? postData : buildFormData(postData);

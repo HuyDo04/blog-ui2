@@ -151,7 +151,6 @@ const Header = () => {
                                         onMarkAllAsRead={handleMarkAllAsRead}
                                     />
                                 </div>
-{console.log("user:", user)}
                                 {/* User Menu */}
                                 <div
                                     className={styles.userMenu}

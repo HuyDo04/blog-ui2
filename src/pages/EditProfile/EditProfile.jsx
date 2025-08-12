@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import Card from "../../components/Card/Card";
 import FallbackImage from "../../components/FallbackImage/FallbackImage";
-import { updateAvatar } from "../../services/user.service";
+import Input from "../../components/Input/Input"; // Assuming an Input component exists
+import { updateAvatar, updateUser, checkUsernameExists } from "../../services/user.service";
 import styles from "./EditProfile.module.scss";
 import { selectCurrentUser, setUser } from "@/features/auth/authSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,12 +12,19 @@ import { useDispatch, useSelector } from "react-redux";
 const EditProfile = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const user = useSelector(selectCurrentUser);
+
     const [avatarFile, setAvatarFile] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState("");
+    const [username, setUsername] = useState(user?.username || "");
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-    const user = useSelector(selectCurrentUser);
+    useEffect(() => {
+        if (user) {
+            setUsername(user.username || "");
+        }
+    }, [user]);
 
     const handleAvatarChange = (event) => {
         const file = event.target.files[0];
@@ -45,36 +53,86 @@ const EditProfile = () => {
         reader.readAsDataURL(file);
     };
 
+    const handleUsernameChange = (e) => {
+        setUsername(e.target.value);
+        setErrors((prev) => ({ ...prev, username: undefined }));
+    };
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!avatarFile) {
-        setErrors({ avatar: "Vui lòng chọn ảnh để upload" });
-        return;
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrors({});
 
-    setLoading(true);
-    try {
-        const formData = new FormData();
-        formData.append("avatar", avatarFile);
-        const response = await updateAvatar(formData);
-        
-        // Cập nhật avatar vào Redux ngay lập tức
-        dispatch(setUser({
-            ...user, // dữ liệu user hiện tại từ Redux
-            avatar: response.avatar
-        }))
-        
-        // Navigate về trang trước
-        navigate(`/profile/${user.username}`);
-    } catch (error) {
-        console.error("Lỗi upload avatar:", error);
-        setErrors({ submit: "Không thể upload ảnh. Vui lòng thử lại." });
-    } finally {
-        setLoading(false);
-    }
-};
+        let hasError = false;
+        const newErrors = {};
 
+        // Validate username
+        if (!username.trim()) {
+            newErrors.username = "Tên người dùng không được để trống";
+            hasError = true;
+        }
+
+        if (hasError) {
+            setErrors(newErrors);
+            setLoading(false);
+            return;
+        }
+
+        try {
+            let updatedUser = { ...user };
+            let avatarUpdated = false;
+            let profileUpdated = false;
+
+            // Handle avatar update
+            if (avatarFile) {
+                try {
+                    const formData = new FormData();
+                    formData.append("avatar", avatarFile);
+                    const response = await updateAvatar(formData);
+                    updatedUser = { ...updatedUser, avatar: response.avatar };
+                    avatarUpdated = true;
+                } catch (error) {
+                    console.error("Lỗi upload avatar:", error);
+                    newErrors.submit = "Không thể upload ảnh đại diện.";
+                    hasError = true;
+                }
+            }
+
+            // Handle username update
+            if (username !== user?.username) {
+                try {
+                    const usernameTaken = await checkUsernameExists(username);
+                    if (usernameTaken) {
+                        newErrors.username = "Tên người dùng đã tồn tại";
+                        hasError = true;
+                    } else {
+                        const response = await updateUser(user._id, { username });
+                        updatedUser = { ...updatedUser, username: response.username };
+                        profileUpdated = true;
+                    }
+                } catch (error) {
+                    console.error("Lỗi cập nhật tên người dùng:", error);
+                    newErrors.submit = newErrors.submit ? newErrors.submit + " " + "Không thể cập nhật tên người dùng." : "Không thể cập nhật tên người dùng. Tên người dùng đã tồn tại.";
+                    hasError = true;
+                }
+            }
+
+            if (hasError) {
+                setErrors(newErrors);
+            } else if (avatarUpdated || profileUpdated) {
+                dispatch(setUser(updatedUser));
+                navigate(`/profile/${updatedUser.username}`);
+            } else {
+                // No changes made, just navigate back
+                navigate(`/profile/${user.username}`);
+            }
+        } catch (error) {
+            console.error("Lỗi chung khi cập nhật hồ sơ:", error);
+            setErrors({ submit: "Đã xảy ra lỗi khi cập nhật hồ sơ." });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleCancel = () => {
         navigate(-1);
@@ -91,8 +149,8 @@ const handleSubmit = async (e) => {
                     >
                         ← Quay lại
                     </Button>
-                    <h1>Đổi Avatar</h1>
-                    <p>Chọn ảnh mới và xem trước trước khi lưu</p>
+                    <h1>Chỉnh sửa hồ sơ</h1>
+                    <p>Cập nhật thông tin cá nhân của bạn</p>
                 </div>
 
                 <Card className={styles.formCard}>
@@ -100,18 +158,17 @@ const handleSubmit = async (e) => {
                         <div className={styles.section}>
                             <h3>Avatar</h3>
                             <div className={styles.avatarPreview}>
-                            
-                <FallbackImage
-                    src={
-                        avatarPreview // Nếu đã chọn ảnh mới → hiển thị preview
-                            ? avatarPreview
-                            : user?.avatar // Nếu chưa chọn ảnh → hiển thị avatar hiện tại
-                                ? user.avatar
-                                : "http://localhost:3000/uploads/posts/avatar-default.jpg"
-                    }
-                    alt="Avatar preview"
-                    className={styles.avatarImg}
-                />
+                                <FallbackImage
+                                    src={
+                                        avatarPreview // Nếu đã chọn ảnh mới → hiển thị preview
+                                            ? avatarPreview
+                                            : user?.avatar // Nếu chưa chọn ảnh → hiển thị avatar hiện tại
+                                                ? user.avatar
+                                                : "http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                    }
+                                    alt="Avatar preview"
+                                    className={styles.avatarImg}
+                                />
 
                                 <div className={styles.imageUpload}>
                                     <input
@@ -140,6 +197,19 @@ const handleSubmit = async (e) => {
                             </p>
                         </div>
 
+                        <div className={styles.section}>
+                            <h3>Thông tin cơ bản</h3>
+                            <Input
+                                label="Tên người dùng"
+                                id="username"
+                                name="username"
+                                value={username}
+                                onChange={handleUsernameChange}
+                                error={errors.username}
+                                placeholder="Nhập tên người dùng của bạn"
+                            />
+                        </div>
+
                         {errors.submit && (
                             <div className={styles.submitError}>
                                 {errors.submit}
@@ -162,7 +232,7 @@ const handleSubmit = async (e) => {
                                 loading={loading}
                                 size="lg"
                             >
-                                Lưu ảnh
+                                Lưu thay đổi
                             </Button>
                         </div>
                     </form>

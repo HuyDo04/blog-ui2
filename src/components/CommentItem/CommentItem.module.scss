@@ -1,6 +1,27 @@
 @use "../../styles/variables" as *;
 @use "../../styles/mixins" as *;
 
+textarea {
+    border: none;
+    /* Bỏ viền mặc định */
+    outline: none;
+    /* Bỏ viền xanh khi focus */
+    resize: none;
+    /* Không cho kéo thay đổi kích thước */
+    width: 100%;
+    /* Chiếm toàn bộ chiều ngang */
+    padding: 0.75rem 1rem;
+    /* Khoảng cách bên trong */
+    font-size: 1rem;
+    /* Cỡ chữ */
+    background-color: transparent;
+    /* Nền trong suốt */
+}
+
+textarea:focus {
+    background-color: transparent;
+}
+
 .commentItem {
     margin-bottom: $spacing-4;
     margin-left: var(--comment-indent, 0);

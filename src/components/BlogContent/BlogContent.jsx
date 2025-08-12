@@ -36,6 +36,12 @@ const BlogContent = ({
 
     const getImageUrl = (path) => {
         if (!path) return "";
+    
+        // Nếu đã là URL tuyệt đối thì trả về luôn
+        if (/^https?:\/\//i.test(path)) {
+            return path;
+        }
+    
         const API_URL = new URL(
             import.meta.env.VITE_BASE_URL || "http://localhost:3000"
         );
@@ -44,10 +50,11 @@ const BlogContent = ({
         // Chuyển \ thành / và bỏ public/ ở đầu
         const imagePath = path
             .replace(/\\/g, "/")         // fix path Windows
-            .replace(/^public\//, "");   // chỉ bỏ "public/" ở đầu
+            .replace(/^public\//, "");   // bỏ "public/" ở đầu nếu có
     
         return `${ASSET_BASE_URL}/${imagePath}`;
     };
+    
     
     if (loading || !title) {
         return (

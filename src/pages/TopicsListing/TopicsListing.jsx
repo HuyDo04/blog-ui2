@@ -24,7 +24,7 @@ const TopicsListing = () => {
         fetchTopics();
     }, []);
     const handleTopicClick = (slug) => {
-        navigate(`/topics/${slug}`);
+        navigate(`/topics/by-slug/${slug}`);
     };
     if (loading) {
         return (

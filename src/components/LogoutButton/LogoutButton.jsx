@@ -19,7 +19,7 @@ const LogoutButton = ({ className = "", onLogout }) => {
             // Dispatch action logout nếu dùng redux
             dispatch(logout());
             // Chuyển hướng về trang đăng nhập
-            window.location.href = "/login";
+            window.location.href = "/";
             // Gọi callback nếu có
             if (onLogout) onLogout();
         } catch (error) {

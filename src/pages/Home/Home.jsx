@@ -192,11 +192,11 @@ const Home = () => {
                         layout="grid"
                         className={styles.recentPosts}
                     />
-                    <div className={styles.sectionAction}>
+                    {/* <div className={styles.sectionAction}>
                         <Button variant="secondary" size="lg" asChild>
                             <Link to="/topics">View All Posts</Link>
                         </Button>
-                    </div>
+                    </div> */}
                 </section>
 
                 {/* Trending Topics */}
@@ -208,7 +208,7 @@ const Home = () => {
                         </p>
                     </div>
                     <TopicList 
-                        topics={topics} 
+                        topics={topics.slice(0, 6)} 
                         onTopicClick={handleTopicClick}
                     />
                     <div className={styles.sectionAction}>

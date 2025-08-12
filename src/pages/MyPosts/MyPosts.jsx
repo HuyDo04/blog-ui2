@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { getPostsByUserId, deletePost } from "../../services/post.service";
+import { selectCurrentUser } from "../../features/auth/authSlice";
 import { Link } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import PostCard from "../../components/PostCard/PostCard";
@@ -12,83 +15,32 @@ const MyPosts = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
-
-    // Mock data - trong thực tế sẽ fetch từ API
-    const mockPosts = [
-        {
-            id: 1,
-            title: "Getting Started with React Hooks",
-            slug: "getting-started-react-hooks",
-            excerpt:
-                "Learn the fundamentals of React Hooks and how they can simplify your component logic.",
-            coverImage: "https://via.placeholder.com/400x200?text=React+Hooks",
-            readingTime: 8,
-            publishedAt: "2024-01-15",
-            status: "published",
-            topics: ["React", "JavaScript"],
-            viewsCount: 1250,
-            likesCount: 42,
-            commentsCount: 15,
-        },
-        {
-            id: 2,
-            title: "Advanced CSS Grid Techniques",
-            slug: "advanced-css-grid-techniques",
-            excerpt:
-                "Deep dive into CSS Grid and discover advanced layout techniques for modern web development.",
-            coverImage: "https://via.placeholder.com/400x200?text=CSS+Grid",
-            readingTime: 12,
-            publishedAt: "2024-01-10",
-            status: "published",
-            topics: ["CSS", "Web Design"],
-            viewsCount: 890,
-            likesCount: 28,
-            commentsCount: 8,
-        },
-        {
-            id: 3,
-            title: "Building Scalable APIs with Node.js",
-            slug: "building-scalable-apis-nodejs",
-            excerpt:
-                "Best practices for creating robust and scalable APIs using Node.js and Express.",
-            coverImage: "https://via.placeholder.com/400x200?text=Node.js+API",
-            readingTime: 15,
-            publishedAt: "2024-01-05",
-            status: "draft",
-            topics: ["Node.js", "Backend"],
-            viewsCount: 0,
-            likesCount: 0,
-            commentsCount: 0,
-        },
-        {
-            id: 4,
-            title: "Modern JavaScript ES2024 Features",
-            slug: "modern-javascript-es2024-features",
-            excerpt:
-                "Explore the latest JavaScript features and how they can improve your development workflow.",
-            coverImage:
-                "https://via.placeholder.com/400x200?text=JavaScript+ES2024",
-            readingTime: 10,
-            publishedAt: "2023-12-28",
-            status: "published",
-            topics: ["JavaScript", "ES2024"],
-            viewsCount: 2150,
-            likesCount: 67,
-            commentsCount: 23,
-        },
-    ];
-
+    const currentUser = useSelector(selectCurrentUser);
+    console.log("curent user:", currentUser);
+    
     useEffect(() => {
-        // Simulate API call
-        const fetchPosts = async () => {
+        const fetchUserPosts = async () => {
             setLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setPosts(mockPosts);
-            setLoading(false);
+            try {
+                const response = await getPostsByUserId(currentUser.id);
+                console.log("Response:", response);
+                
+                setPosts(response);
+            } catch (error) {
+                console.error("Failed to fetch user posts:", error);
+                setPosts([]);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        fetchPosts();
-    }, []);
+        if (currentUser && currentUser.id) {
+            fetchUserPosts();
+        } else {
+            setLoading(false);
+            setPosts([]);
+        }
+    }, [currentUser]);
 
     const filteredPosts = posts.filter((post) => {
         const matchesTab = activeTab === "all" || post.status === activeTab;
@@ -122,6 +74,20 @@ const MyPosts = () => {
             count: posts.filter((p) => p.status === "draft").length,
         },
     ];
+
+    const handleDelete = async (postId) => {
+        const confirmDelete = window.confirm("Bạn có chắc muốn xóa bài viết này?");
+        if (!confirmDelete) return;
+
+        try {
+            await deletePost(postId);
+            setPosts((prev) => prev.filter((p) => p.id !== postId)); // ✅ Cập nhật state
+        } catch (error) {
+            console.error("Xóa bài viết thất bại:", error);
+            alert("Không thể xóa bài viết. Vui lòng thử lại.");
+        }
+    };
+      
 
     if (loading) {
         return (
@@ -236,18 +202,20 @@ const MyPosts = () => {
                         <div className={styles.postsGrid}>
                             {filteredPosts.map((post) => (
                                 <div key={post.id} className={styles.postItem}>
+                                    {console.log("post:", post)}
+
                                     <PostCard
                                         title={post.title}
                                         excerpt={post.excerpt}
-                                        coverImage={post.coverImage}
+                                        coverImage={post.featuredImage}
+                                        featuredImage={post.featuredImage}
                                         readingTime={post.readingTime}
                                         publishedAt={post.publishedAt}
                                         slug={post.slug}
                                         topics={post.topics}
                                         author={{
-                                            name: "You",
-                                            username: "you",
-                                            avatar: "https://via.placeholder.com/32?text=You",
+                                            name: currentUser.username,
+                                            avatar: currentUser.avatar || "http://localhost:3000/uploads/posts/avatar-default.jpg",
                                         }}
                                     />
                                     <div className={styles.postMeta}>
@@ -320,7 +288,9 @@ const MyPosts = () => {
                                                 {post.commentsCount}
                                             </span>
                                         </div>
+                                        
                                         <div className={styles.postActions}>
+                                            
                                             <Link
                                                 to={`/write/${post.slug}`}
                                                 className={styles.actionButton}
@@ -341,6 +311,21 @@ const MyPosts = () => {
                                                     />
                                                 </svg>
                                             </Link>
+                                            <button
+                                                onClick={() => handleDelete(post.id)}
+                                                className={`${styles.actionButton} ${styles.deleteButton}`}
+                                                title="Delete post"
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                                    <path
+                                                        d="M2 4h12M6 4V2h4v2m1 0v10a1 1 0 01-1 1H6a1 1 0 01-1-1V4h6z"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </button>
                                             {post.status === "published" && (
                                                 <Link
                                                     to={`/blog/${post.slug}`}

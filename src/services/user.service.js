@@ -36,3 +36,19 @@ export const updateAvatar = async (formData) => {
     const response = await httpRequest.patch(`/users/me/avatar`, formData);
     return response;
 };
+
+// Check if username exists
+export const checkUsernameExists = async (username) => {
+    try {
+        const response = await httpRequest.get(`/users/check-username?username=${username}`);
+        return response.exists; // Assuming backend returns { exists: true/false }
+    } catch (error) {
+        // Handle error, e.g., network issues, or if backend returns 409 for conflict
+        console.error("Error checking username existence:", error);
+        // If the backend returns an error for existing username, we can treat it as exists
+        if (error.response && error.response.status === 409) {
+            return true; // Username exists
+        }
+        throw error; // Re-throw other errors
+    }
+};
