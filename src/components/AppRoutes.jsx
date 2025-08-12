@@ -7,7 +7,7 @@ import Loading from "./Loading/Loading";
 import ErrorBoundary from "./ErrorBoundary/ErrorBoundary";
 import VerifyEmail from "@/pages/VerifyEmail/VerifyEmail";
 import VerifyOtp from "@/pages/VerifyOtp/VerifyOtp";
-import ChangePassword from "@/pages/ChangePassword/changePassword";
+import ChangePassword from "@/pages/ChangePassword/ChangePassword";
 
 // Lazy load pages for better performance
 const Home = lazy(() => import("../pages/Home/Home"));
