@@ -46,7 +46,7 @@ const AuthorInfo = ({
         followers,
         following,
     } = author;
-
+    
     return (
         <div className={`${styles.authorInfo} ${className || ""}`} {...props}>
             <div className={styles.header}>
@@ -55,6 +55,7 @@ const AuthorInfo = ({
                         src={avatar}
                         alt={name}
                         className={styles.avatar}
+                        fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
                     />
                 </div>
                 <div className={styles.info}>

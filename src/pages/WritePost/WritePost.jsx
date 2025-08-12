@@ -28,10 +28,7 @@ const WritePost = () => {
   const isEditing = Boolean(slug);
 
   const currentUser = useSelector(selectCurrentUser);
-  console.log("currentUser", currentUser);
 
-  //")
-  // Đã loại bỏ readTime và publishedAt khỏi state ban đầu
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -39,9 +36,12 @@ const WritePost = () => {
     content: "",
     topicId: null,
     authorId: null,
+    featuredImage: null,
   });
 
-  const [readTime, setReadTime] = useState(0); // State riêng cho readTime (chỉ để hiển thị)
+  const [featuredImageFile, setFeaturedImageFile] = useState(null);
+  const [featuredImagePreview, setFeaturedImagePreview] = useState(null);
+  const [readTime, setReadTime] = useState(0);
   const [existingMedia, setExistingMedia] = useState([]);
   const [topics, setTopics] = useState([]);
   const [errors, setErrors] = useState({});
@@ -51,7 +51,6 @@ const WritePost = () => {
 
   const headerRef = useRef(null);
 
-  // Lấy danh sách topics
   useEffect(() => {
     const fetchTopics = async () => {
       const topicsData = await getTopics();
@@ -60,7 +59,6 @@ const WritePost = () => {
     fetchTopics();
   }, []);
 
-  // Lấy dữ liệu bài viết khi edit
   useEffect(() => {
     if (isEditing && slug) {
       const fetchPost = async () => {
@@ -73,25 +71,29 @@ const WritePost = () => {
             content: post.content || "",
             topicId: post.topicId || null,
             authorId: post.authorId || null,
-            // published và publishedAt không cần thiết ở form data
+            featuredImage: post.featuredImage || null,
           });
-          setReadTime(post.readTime || 0); // Cập nhật readTime từ backend
+          if (post.featuredImage) {
+            // Giả sử backend phục vụ thư mục 'public' một cách tĩnh
+            // và đường dẫn được lưu là 'public\\uploads\\posts\\image.png'
+            const imageUrl = `/${post.featuredImage.replace(/\\/g, '/').replace('public/', '')}`;
+            setFeaturedImagePreview(imageUrl);
+          }
+          setReadTime(post.readTime || 0);
           setExistingMedia(post.media || []);
         } catch (err) {
           console.error("Error loading post:", err);
-          navigate("/404"); // Chuyển hướng nếu không tìm thấy bài viết
+          navigate("/404");
         }
       };
       fetchPost();
     } else {
-      // Khi tạo mới, gán authorId từ user đăng nhập
       if (currentUser?.id) {
         setFormData((prev) => ({ ...prev, authorId: currentUser.id }));
       }
     }
   }, [isEditing, slug, currentUser, navigate]);
 
-  // Xác định scroll header
   useEffect(() => {
     const handleScroll = () => {
       if (headerRef.current) {
@@ -118,7 +120,6 @@ const WritePost = () => {
     }
   };
 
-  // Đã bỏ tính toán readTime ở đây
   const handleContentChange = (value) => {
     setFormData((prev) => ({
       ...prev,
@@ -126,6 +127,14 @@ const WritePost = () => {
     }));
     if (errors.content) {
       setErrors((prev) => ({ ...prev, content: "" }));
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFeaturedImageFile(file);
+      setFeaturedImagePreview(URL.createObjectURL(file));
     }
   };
 
@@ -142,26 +151,34 @@ const WritePost = () => {
     if (!validateForm()) return;
 
     setSaving(true);
-    
-    // Dữ liệu gửi đi đã được đơn giản hóa
-    const postData = {
-      ...formData,
-      published: isPublished,
-    };
+
+    const postFormData = new FormData();
+
+    // Nối các trường dữ liệu vào FormData
+    postFormData.append('title', formData.title);
+    postFormData.append('slug', formData.slug);
+    postFormData.append('excerpt', formData.excerpt);
+    postFormData.append('content', formData.content);
+    postFormData.append('topicId', formData.topicId);
+    postFormData.append('authorId', formData.authorId);
+    postFormData.append('published', isPublished);
+
+    // Nối tệp ảnh nếu người dùng đã chọn ảnh mới
+    if (featuredImageFile) {
+      postFormData.append('featuredImage', featuredImageFile);
+    }
 
     try {
       let response;
       if (isEditing) {
-        response = await updatePost(slug, postData);
+        response = await updatePost(slug, postFormData);
       } else {
-        response = await createPost(postData);
+        response = await createPost(postFormData);
       }
-      
-      // Chuyển hướng đến trang bài viết đã tạo/cập nhật
-      navigate(`/post/${response.post.slug}`); 
+
+      navigate(`/post/${response.post.slug}`);
     } catch (error) {
       console.error("Error saving post:", error);
-      // Có thể thêm thông báo lỗi cho người dùng ở đây
     } finally {
       setSaving(false);
     }
@@ -202,6 +219,23 @@ const WritePost = () => {
                 error={errors.excerpt}
                 fullWidth
               />
+
+              <div className={styles.formGroup}>
+                <label htmlFor="featuredImage">Featured Image</label>
+                <input
+                  id="featuredImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className={styles.fileInput}
+                />
+                {featuredImagePreview && (
+                  <div className={styles.imagePreview} style={{ marginTop: '1rem' }}>
+                    <p>Preview:</p>
+                    <img src={featuredImagePreview} alt="Featured Preview" style={{ maxWidth: '200px', height: 'auto', marginTop: '0.5rem', border: '1px solid #ddd', padding: '5px' }} />
+                  </div>
+                )}
+              </div>
 
               <div className={styles.formGroup}>
                 <label>Topic *</label>

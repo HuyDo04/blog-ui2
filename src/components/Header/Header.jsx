@@ -151,7 +151,7 @@ const Header = () => {
                                         onMarkAllAsRead={handleMarkAllAsRead}
                                     />
                                 </div>
-
+{console.log("user:", user)}
                                 {/* User Menu */}
                                 <div
                                     className={styles.userMenu}
@@ -169,6 +169,7 @@ const Header = () => {
                                             src={user?.avatar}
                                             alt={user?.name}
                                             className={styles.userAvatar}
+                                            fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
                                         />
                                         <span className={styles.userName}>
                                             {user?.name}
@@ -354,6 +355,7 @@ const Header = () => {
                                         src={user?.avatar}
                                         alt={user?.name}
                                         className={styles.mobileUserAvatar}
+                                        fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
                                     />
                                     <div>
                                         <div className={styles.mobileUserName}>

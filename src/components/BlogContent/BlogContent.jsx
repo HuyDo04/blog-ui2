@@ -19,6 +19,7 @@ const BlogContent = ({
     featuredImage,
     loading = false,
     className,
+    published,
     ...props // props bây giờ sẽ không chứa topicId nữa
 }) => {
     const formatDate = (dateString) => {
@@ -30,7 +31,23 @@ const BlogContent = ({
             day: "numeric",
         });
     };
+ 
+    console.log("featured image", featuredImage)
+
+    const getImageUrl = (path) => {
+        if (!path) return "";
+        const API_URL = new URL(
+            import.meta.env.VITE_BASE_URL || "http://localhost:3000"
+        );
+        const ASSET_BASE_URL = `${API_URL.protocol}//${API_URL.host}`;
     
+        // Chuyển \ thành / và bỏ public/ ở đầu
+        const imagePath = path
+            .replace(/\\/g, "/")         // fix path Windows
+            .replace(/^public\//, "");   // chỉ bỏ "public/" ở đầu
+    
+        return `${ASSET_BASE_URL}/${imagePath}`;
+    };
     
     if (loading || !title) {
         return (
@@ -58,7 +75,7 @@ const BlogContent = ({
             {featuredImage && (
                 <div className={styles.imageContainer}>
                     <FallbackImage
-                        src={featuredImage}
+                        src={getImageUrl(featuredImage)}
                         alt={title}
                         className={styles.featuredImage}
                     />
@@ -80,7 +97,7 @@ const BlogContent = ({
                     <div className={styles.author}>
                         {author?.avatar && (
                             <FallbackImage
-                                src={author.avatar}
+                                src={getImageUrl(author.avatar)}
                                 alt={author.name || author.username}
                                 className={styles.authorAvatar}
                             />
@@ -145,6 +162,7 @@ BlogContent.propTypes = {
     featuredImage: PropTypes.string,
     loading: PropTypes.bool,
     className: PropTypes.string,
+    published: PropTypes.bool,
 };
 
 export default BlogContent;

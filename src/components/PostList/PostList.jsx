@@ -77,7 +77,7 @@ PostList.propTypes = {
             author: PropTypes.shape({
                 username:PropTypes.string,
                 avatar: PropTypes.string,
-            }).isRequired,
+            }),
             publishedAt: PropTypes.string.isRequired,
             readTime: PropTypes.number,
             topic: PropTypes.string,

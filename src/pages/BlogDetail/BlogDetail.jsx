@@ -53,7 +53,7 @@ const BlogDetail = () => {
                     ...postRes,
                     author: {
                         name: authorRes.username,
-                        avatar: authorRes.avatar || "https://via.placeholder.com/150",
+                        avatar: authorRes.avatar || "http://localhost:3000/uploads/posts/avatar-default.jpg",
                         social: {},
                     },
                 };
@@ -174,6 +174,8 @@ const BlogDetail = () => {
 
             <div className={styles.authorSection}>
                 <AuthorInfo author={post.author} />
+                {console.log(post.author)};
+                
             </div>
 
             <div className={styles.contentSection}>

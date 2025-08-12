@@ -24,7 +24,6 @@ const CommentItem = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dropdownRef = useRef(null);
-  console.log("Comment:", comment)
   const {
     id,
     author,
@@ -98,7 +97,8 @@ const CommentItem = ({
     setShowDeleteConfirm(false);
     setShowDropdown(false);
   };
-  console.log(author)
+  console.log("Author:", author);
+  
   return (
     <div
       className={`${styles.commentItem} ${className || ""}`}
@@ -107,7 +107,7 @@ const CommentItem = ({
     >
       <div className={styles.comment}>
         <div className={styles.avatar}>
-          <FallbackImage src={author.avatar || "https://picsum.photos/200/300"} alt={author.name} />
+          <FallbackImage src={author.avatar} alt={author.name} fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg" />
         </div>
 
         <div className={styles.content}>

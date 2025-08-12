@@ -21,18 +21,23 @@ export const getPosts = async () => {
     return await httpRequest.get("/posts");
 };
 
+// Get all posts by user ID
+export const getPostsByUserId = async (userId) => {
+    return await httpRequest.get(`/users/${userId}/posts`);
+};
+
 // Create post
 export const createPost = async (postData) => {
-    const formData = buildFormData(postData);
-    return await httpRequest.post("/posts", formData, {
+    const dataToSend = postData instanceof FormData ? postData : buildFormData(postData);
+    return await httpRequest.post("/posts", dataToSend, {
         headers: { "Content-Type": "multipart/form-data" }
     });
 };
 
 // Update existing post
 export const updatePost = async (id, postData) => {
-    const formData = buildFormData(postData);
-    return await httpRequest.put(`/posts/${id}`, formData, {
+    const dataToSend = postData instanceof FormData ? postData : buildFormData(postData);
+    return await httpRequest.put(`/posts/${id}`, dataToSend, {
         headers: { "Content-Type": "multipart/form-data" }
     });
 };

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "../../features/auth/authSlice";
 import AuthorInfo from "../../components/AuthorInfo/AuthorInfo";
 import PostList from "../../components/PostList/PostList";
 import Button from "../../components/Button/Button";
@@ -10,10 +12,14 @@ import FallbackImage from "../../components/FallbackImage/FallbackImage";
 import ChatWindow from "../../components/ChatWindow/ChatWindow";
 
 import styles from "./Profile.module.scss";
+import { getPostsByUserId } from "@/services/post.service";
 
 const Profile = () => {
     const { username } = useParams();
     const navigate = useNavigate();
+    const currentUser = useSelector(selectCurrentUser);
+    
+
     const [profile, setProfile] = useState(null);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,119 +29,50 @@ const Profile = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isChatMinimized, setIsChatMinimized] = useState(false);
-
-    // Check if this is the user's own profile
-    // In a real app, you'd get current user from auth context
-    const currentUser = "sonngoc"; // Mock current user
-    const isOwnProfile = currentUser === username;
-
-    // Mock profile data - trong thực tế sẽ fetch từ API
-    const mockProfile = {
-        username: username || "john-doe",
-        name: "John Doe",
-        title: "Senior Frontend Developer",
-        bio: "Passionate about modern web development, React ecosystem, and creating amazing user experiences. Love sharing knowledge through writing and open source contributions.",
-        avatar: "https://via.placeholder.com/120?text=JD",
-        coverImage: "https://via.placeholder.com/1200x300?text=Cover+Image",
-        location: "San Francisco, CA",
-        website: "https://johndoe.dev",
-        joinedDate: "2022-01-15",
-        social: {
-            twitter: "https://twitter.com/johndoe",
-            github: "https://github.com/johndoe",
-            linkedin: "https://linkedin.com/in/johndoe",
-            website: "https://johndoe.dev",
-        },
-        stats: {
-            postsCount: 42,
-            followers: 1250,
-            following: 180,
-            likes: 3400,
-        },
-        skills: ["React", "TypeScript", "Node.js", "GraphQL", "AWS", "Docker"],
-        badges: [
-            { name: "Top Author", color: "primary", icon: "🏆" },
-            { name: "Early Adopter", color: "secondary", icon: "🚀" },
-            { name: "Community Helper", color: "success", icon: "🤝" },
-        ],
-    };
-
-    // Mock posts data
-    const generatePosts = (page = 1) => {
-        const postsPerPage = 6;
-        const totalPosts = 42;
-        const startIndex = (page - 1) * postsPerPage;
-
-        return Array.from(
-            { length: Math.min(postsPerPage, totalPosts - startIndex) },
-            (_, i) => ({
-                id: startIndex + i + 1,
-                title: `Understanding ${
-                    [
-                        "React Hooks",
-                        "TypeScript Generics",
-                        "CSS Grid",
-                        "Node.js Streams",
-                        "GraphQL Queries",
-                        "Docker Containers",
-                    ][i % 6]
-                }`,
-                excerpt:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                author: {
-                    name: mockProfile.name,
-                    avatar: mockProfile.avatar,
-                    username: mockProfile.username,
-                },
-                publishedAt: new Date(
-                    Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
-                ).toISOString(),
-                readTime: Math.floor(Math.random() * 10) + 3,
-                topic: [
-                    "React",
-                    "TypeScript",
-                    "CSS",
-                    "Node.js",
-                    "GraphQL",
-                    "DevOps",
-                ][i % 6],
-                slug: `post-${startIndex + i + 1}`,
-                featuredImage: `https://via.placeholder.com/400x200?text=Post+${
-                    startIndex + i + 1
-                }`,
-                likes: Math.floor(Math.random() * 100) + 10,
-                comments: Math.floor(Math.random() * 50) + 5,
-            })
-        );
-    };
+    const isOwnProfile = currentUser && currentUser.username === username;
 
     useEffect(() => {
         const loadProfile = async () => {
             setLoading(true);
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            setProfile(mockProfile);
+            if (isOwnProfile) {
+                setProfile(currentUser);
+            } else {
+                // In a real app, you would fetch the profile of the user specified by `username`
+                console.log(`Fetching profile for ${username}...`);
+                // For now, we'll simulate a not found state for other users.
+                setProfile(null);
+            }
             setLoading(false);
         };
 
         loadProfile();
-    }, [username]);
+    }, [username, currentUser, isOwnProfile]);
 
     useEffect(() => {
         const loadPosts = async () => {
-            setPostsLoading(true);
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 600));
-            const newPosts = generatePosts(currentPage);
-            setPosts(newPosts);
-            setTotalPages(Math.ceil(42 / 6)); // 42 total posts, 6 per page
-            setPostsLoading(false);
+            if (profile) {
+                setPostsLoading(true);
+                try {
+                    const response = await getPostsByUserId(currentUser.id);
+                    
+                    setPosts(response);
+                    
+                    // Assuming the API returns pagination info
+                    setTotalPages(response.totalPages || 1);
+                    setCurrentPage(response.currentPage || 1);
+                } catch (error) {
+                    console.error("Failed to fetch posts:", error);
+                    // Handle error state if needed
+                } finally {
+                    setPostsLoading(false);
+                }
+            }
         };
 
-        if (profile) {
+        if (activeTab === "posts") {
             loadPosts();
         }
-    }, [profile, currentPage, activeTab]);
+    }, [profile, activeTab, currentPage, currentUser.id]);
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -143,6 +80,7 @@ const Profile = () => {
     };
 
     const formatDate = (dateString) => {
+        if (!dateString) return "";
         return new Date(dateString).toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
@@ -192,7 +130,8 @@ const Profile = () => {
             {/* Cover Section */}
             <div className={styles.coverSection}>
                 <div className={styles.coverImage}>
-                    <FallbackImage src={profile.coverImage} alt="Cover" />
+                    {/* Use a placeholder or leave empty if not available */}
+                    <FallbackImage src={currentUser.avatar || ''} alt="Cover" />
                     <div className={styles.coverOverlay}></div>
                 </div>
 
@@ -204,13 +143,14 @@ const Profile = () => {
                                     src={profile.avatar}
                                     alt={profile.name}
                                     className={styles.avatar}
+                                    fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
                                 />
                                 <div className={styles.basicInfo}>
                                     <h1 className={styles.name}>
-                                        {profile.name}
+                                        {profile.username || "User Name"}
                                     </h1>
                                     <p className={styles.username}>
-                                        @{profile.username}
+                                        @{profile.username || "username"}
                                     </p>
                                     {profile.title && (
                                         <p className={styles.title}>
@@ -271,22 +211,22 @@ const Profile = () => {
                             <h3>Stats</h3>
                             <div className={styles.stats}>
                                 <div className={styles.stat}>
-                                    <strong>{profile.stats.postsCount}</strong>
+                                    <strong>{posts.length || 0}</strong>
                                     <span>Posts</span>
                                 </div>
                                 <div className={styles.stat}>
                                     <strong>
-                                        {profile.stats.followers.toLocaleString()}
+                                        {profile.stats?.followers?.toLocaleString() || 0}
                                     </strong>
                                     <span>Followers</span>
                                 </div>
                                 <div className={styles.stat}>
-                                    <strong>{profile.stats.following}</strong>
+                                    <strong>{profile.stats?.following || 0}</strong>
                                     <span>Following</span>
                                 </div>
                                 <div className={styles.stat}>
                                     <strong>
-                                        {profile.stats.likes.toLocaleString()}
+                                        {profile.stats?.likes?.toLocaleString() || 0}
                                     </strong>
                                     <span>Likes</span>
                                 </div>
@@ -365,7 +305,7 @@ const Profile = () => {
                                 <div className={styles.infoItem}>
                                     <span className={styles.infoIcon}>📅</span>
                                     <span>
-                                        Joined {formatDate(profile.joinedDate)}
+                                        Joined {formatDate(profile.createdAt || profile.joinedDate)}
                                     </span>
                                 </div>
                             </div>
@@ -419,7 +359,7 @@ const Profile = () => {
                                 }`}
                                 onClick={() => setActiveTab("posts")}
                             >
-                                Posts ({profile.stats.postsCount})
+                                Posts ({posts.length || 0})
                             </button>
                             <button
                                 className={`${styles.tab} ${
@@ -450,15 +390,16 @@ const Profile = () => {
                                 <div className={styles.aboutTab}>
                                     <AuthorInfo
                                         author={{
-                                            name: profile.name,
-                                            title: profile.title,
-                                            bio: profile.bio,
-                                            avatar: profile.avatar,
-                                            social: profile.social,
+                                            name: currentUser.username,
+                                            email: currentUser.email,
+                                            title: currentUser.title,
+                                            bio: currentUser.bio,
+                                            avatar: currentUser.avatar,
+                                            social: currentUser.social,
                                             postsCount:
-                                                profile.stats.postsCount,
-                                            followers: profile.stats.followers,
-                                            following: profile.stats.following,
+                                                posts.length || 0,
+                                            followers: currentUser.stats?.followers,
+                                            following: currentUser.stats?.following,
                                         }}
                                         showFollowButton={false}
                                     />

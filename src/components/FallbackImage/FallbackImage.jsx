@@ -2,6 +2,30 @@ import PropTypes from "prop-types";
 import { useState, useEffect, useRef } from "react";
 import placeholderImage from "../../assets/placeholder.svg";
 
+// Chuẩn hoá đường dẫn ảnh
+const normalizeUrl = (src) => {
+    if (!src) return "";
+
+    // Nếu đã là URL đầy đủ (http/https) hoặc là base64 data URL thì giữ nguyên
+    if (/^https?:\/\//i.test(src) || src.startsWith("data:")) {
+        return src;
+    }
+
+    // Lấy base URL từ env hoặc mặc định localhost
+    const API_URL = new URL(
+        import.meta.env.VITE_BASE_URL || "http://localhost:3000"
+    );
+
+    const ASSET_BASE_URL = `${API_URL.protocol}//${API_URL.host}`;
+
+    // Chuyển \ thành / và bỏ public/ nếu có
+    const imagePath = src
+        .replace(/\\/g, "/")
+        .replace(/^public\//, "");
+
+    return `${ASSET_BASE_URL}/${imagePath}`;
+};
+
 const FallbackImage = ({
     src,
     alt = "",
@@ -13,47 +37,53 @@ const FallbackImage = ({
     lazy = false,
     ...props
 }) => {
+    const normalizedSrc = normalizeUrl(src);
+    const normalizedFallback = normalizeUrl(fallbackSrc);
+
     const [imgSrc, setImgSrc] = useState(
-        lazy ? fallbackSrc : src || fallbackSrc
+        lazy
+            ? normalizedFallback
+            : normalizedSrc || normalizedFallback
     );
+
     const [hasError, setHasError] = useState(false);
     const [isLoaded, setIsLoaded] = useState(!lazy);
+
     const imgRef = useRef(null);
 
+    // Xử lý khi ảnh lỗi
     const handleError = (event) => {
-        // Chỉ fallback nếu chưa lỗi và đang không phải là fallback image
-        if (!hasError && imgSrc !== fallbackSrc) {
+        if (!hasError && imgSrc !== normalizedFallback) {
             setHasError(true);
-            setImgSrc(fallbackSrc);
+            setImgSrc(normalizedFallback);
         }
 
-        // Gọi onError callback nếu được truyền vào (chỉ cho ảnh gốc, không cho fallback)
-        if (onError && imgSrc !== fallbackSrc) {
+        if (onError && imgSrc !== normalizedFallback) {
             onError(event);
         }
     };
 
+    // Xử lý khi ảnh load xong
     const handleLoad = (event) => {
-        // Chỉ reset hasError nếu load thành công và đang là ảnh gốc
-        if (imgSrc === src) {
+        if (imgSrc === normalizedSrc) {
             setHasError(false);
         }
 
-        // Gọi onLoad callback nếu được truyền vào
         if (onLoad) {
             onLoad(event);
         }
     };
 
-    // Lazy loading effect
+    // Lazy loading
     useEffect(() => {
         if (!lazy || !imgRef.current || isLoaded) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 const [entry] = entries;
+
                 if (entry.isIntersecting) {
-                    setImgSrc(src || fallbackSrc);
+                    setImgSrc(normalizedSrc || normalizedFallback);
                     setIsLoaded(true);
                     observer.disconnect();
                 }
@@ -64,21 +94,21 @@ const FallbackImage = ({
         observer.observe(imgRef.current);
 
         return () => observer.disconnect();
-    }, [lazy, src, fallbackSrc, isLoaded]);
+    }, [lazy, normalizedSrc, normalizedFallback, isLoaded]);
 
-    // Reset imgSrc khi src prop thay đổi
+    // Cập nhật ảnh khi src thay đổi
     useEffect(() => {
-        if (!lazy && src) {
-            setImgSrc(src);
+        if (!lazy && normalizedSrc) {
+            setImgSrc(normalizedSrc);
             setHasError(false);
-        } else if (lazy && isLoaded && src) {
-            setImgSrc(src);
+        } else if (lazy && isLoaded && normalizedSrc) {
+            setImgSrc(normalizedSrc);
             setHasError(false);
-        } else if (!src) {
-            setImgSrc(fallbackSrc);
+        } else if (!normalizedSrc) {
+            setImgSrc(normalizedFallback);
             setHasError(false);
         }
-    }, [src, fallbackSrc, lazy, isLoaded]);
+    }, [normalizedSrc, normalizedFallback, lazy, isLoaded]);
 
     return (
         <img

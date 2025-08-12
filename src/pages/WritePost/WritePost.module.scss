@@ -85,6 +85,29 @@
     }
 }
 
+.featuredImagePreview {
+    position: relative;
+    display: inline-block;
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+}
+
+.removeImageBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
 .actions {
     display: flex;
     align-items: center;

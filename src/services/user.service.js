@@ -31,8 +31,8 @@ export const deleteUser = async (id) => {
 };
 
 // Update user avatar
-export const updateAvatar = async (id, formData) => {
-    // Assuming httpRequest can handle FormData and multipart/form-data headers
-    const response = await httpRequest.post(`/users/update-avatar/${id}`, formData);
+export const updateAvatar = async (formData) => {
+    // Giả định rằng httpRequest có thể xử lý FormData và header multipart/form-data
+    const response = await httpRequest.patch(`/users/me/avatar`, formData);
     return response;
 };

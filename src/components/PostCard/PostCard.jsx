@@ -159,6 +159,7 @@ const PostCard = ({
                                 alt={author.name}
                                 className={styles.authorAvatar}
                                 lazy={true}
+                                fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
                             />
                         )}
                         <Link
@@ -324,14 +325,14 @@ const PostCard = ({
 };
 
 PostCard.propTypes = {
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     excerpt: PropTypes.string,
     author: PropTypes.shape({
         name: PropTypes.string,
         avatar: PropTypes.string,
         username: PropTypes.string,
-    }).isRequired,
-    publishedAt: PropTypes.string.isRequired,
+    }),
+    publishedAt: PropTypes.string,
     readTime: PropTypes.number,
     topic: PropTypes.string,
     slug: PropTypes.string,
