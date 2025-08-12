@@ -4,7 +4,12 @@ import axios from "axios";
 // 🔧 Tạo instance httpRequest
 const httpRequest = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  withCredentials: true
+  withCredentials: true,
+  headers: {
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  }
 });
 
 // 🔑 Interceptor Request: thêm token nếu có
