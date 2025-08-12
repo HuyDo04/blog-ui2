@@ -24,7 +24,7 @@ const Badge = ({
 };
 
 Badge.propTypes = {
-    children: PropTypes.node.isRequired,
+    children: PropTypes.node,
     variant: PropTypes.oneOf([
         "default",
         "primary",

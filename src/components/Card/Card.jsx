@@ -9,6 +9,11 @@ const Card = ({
     padding = "md",
     className,
     onClick,
+    authorId,
+    topicId,
+    createdAt,
+    updatedAt,
+    published, // Added this line
     ...props
 }) => {
     const cardClasses = clsx(
