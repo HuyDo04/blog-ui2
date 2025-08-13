@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import Card from "../../components/Card/Card";
 import FallbackImage from "../../components/FallbackImage/FallbackImage";
@@ -208,6 +208,15 @@ const EditProfile = () => {
                                 error={errors.username}
                                 placeholder="Nhập tên người dùng của bạn"
                             />
+                        </div>
+
+                        <div className={styles.section}>
+                            <h3>Mật khẩu</h3>
+                            <Link to="/change-password" className={styles.changePasswordButton}>
+                                <Button variant="secondary" size="lg">
+                                    Đổi mật khẩu
+                                </Button>
+                            </Link>
                         </div>
 
                         {errors.submit && (

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Input, Button } from "../../components";
 import styles from "./ChangePassword.module.scss";
 import { changePassword } from "@/services/auth.service";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/features/auth/authSlice";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
@@ -12,6 +14,11 @@ const ChangePassword = () => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  const user = useSelector(selectCurrentUser);
+  console.log(user);
+  
+
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +70,7 @@ const ChangePassword = () => {
       setMessage(res.message || "Đổi mật khẩu thành công.");
 
       // Redirect sau 2s
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate(`/profile/${user.username}`), 2000);
     } catch (error) {
       console.error("Change password error:", error);
       setErrors({
