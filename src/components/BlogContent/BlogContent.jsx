@@ -32,7 +32,6 @@ const BlogContent = ({
         });
     };
  
-    console.log("featured image", featuredImage)
 
     const getImageUrl = (path) => {
         if (!path) return "";

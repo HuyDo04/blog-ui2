@@ -58,7 +58,6 @@ export const resendOtp = async (email) => {
 
 export const changePassword = async (data) => {
   const response = await httpRequest.post("/change-password", data);
-  console.log("Response ChangePassword:", response);
   
   return response
 }
@@ -70,7 +69,6 @@ export const getCurrentUser = async () => {
 
 export const logout = async (refreshToken) => {
   const response = await httpRequest.post("/logout", { refresh_token: refreshToken });
-  console.log("Logout Response:", response);
   
   return response
 }
