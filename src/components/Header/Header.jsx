@@ -354,7 +354,7 @@ const Header = () => {
                                         src={user?.avatar}
                                         alt={user?.name}
                                         className={styles.mobileUserAvatar}
-                                        fallbackSrc="/uploads/posts/avatar-default.jpg"
+                                        fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                                     />
                                     <div>
                                         <div className={styles.mobileUserName}>

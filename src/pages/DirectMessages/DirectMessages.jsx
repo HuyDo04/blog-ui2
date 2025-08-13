@@ -328,7 +328,7 @@ const DirectMessages = () => {
                                                 .name
                                         }
                                         className={styles.headerAvatar}
-                                        fallbackSrc="/uploads/posts/avatar-default.jpg"
+                                        fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                                     />
                                     <div>
                                         <h2 className={styles.participantName}>
