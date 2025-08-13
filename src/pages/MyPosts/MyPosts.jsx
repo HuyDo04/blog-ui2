@@ -212,7 +212,7 @@ const MyPosts = () => {
                                         topics={post.topics}
                                         author={{
                                             name: currentUser.username,
-                                            avatar: currentUser.avatar || "http://localhost:3000/uploads/posts/avatar-default.jpg",
+                                            avatar: currentUser.avatar || `${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`,
                                         }}
                                     />
                                     <div className={styles.postMeta}>

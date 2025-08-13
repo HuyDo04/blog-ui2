@@ -164,7 +164,7 @@ const EditProfile = () => {
                                             ? avatarPreview
                                             : user?.avatar // Nếu chưa chọn ảnh → hiển thị avatar hiện tại
                                                 ? user.avatar
-                                                : "http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                                : `${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`
                                     }
                                     alt="Avatar preview"
                                     className={styles.avatarImg}

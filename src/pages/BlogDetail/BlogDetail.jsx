@@ -54,7 +54,7 @@ const BlogDetail = () => {
                     ...postRes,
                     author: {
                         name: authorRes.username,
-                        avatar: authorRes.avatar || "http://localhost:3000/uploads/posts/avatar-default.jpg",
+                        avatar: authorRes.avatar || `${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`,
                         social: {},
                     },
                 };
