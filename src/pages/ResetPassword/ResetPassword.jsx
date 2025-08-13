@@ -44,7 +44,6 @@ const ResetPassword = () => {
       [name]: value,
     }));
   };
-console.log(formData);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +57,6 @@ console.log(formData);
     try {
 
       const res = await resetPassword({...formData, email});
-      console.log("res:", res)
       setMessage(res.message || "Đặt lại mật khẩu thành công.");
       // Redirect sang login sau 2s
       setTimeout(() => navigate("/login"), 2000);

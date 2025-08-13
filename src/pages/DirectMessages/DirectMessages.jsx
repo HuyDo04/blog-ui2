@@ -270,7 +270,7 @@ const DirectMessages = () => {
                                         src={conversation.participant.avatar}
                                         alt={conversation.participant.name}
                                         className={styles.avatar}
-                                        fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                        fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                                     />
                                     {conversation.participant.isOnline && (
                                         <div
@@ -328,7 +328,7 @@ const DirectMessages = () => {
                                                 .name
                                         }
                                         className={styles.headerAvatar}
-                                        fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                        fallbackSrc="/uploads/posts/avatar-default.jpg"
                                     />
                                     <div>
                                         <h2 className={styles.participantName}>

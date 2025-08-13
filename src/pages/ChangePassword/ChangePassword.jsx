@@ -16,7 +16,6 @@ const ChangePassword = () => {
   });
 
   const user = useSelector(selectCurrentUser);
-  console.log(user);
   
 
 
@@ -66,7 +65,6 @@ const ChangePassword = () => {
 
     try {
       const res = await changePassword(formData);
-      console.log("Res:", res);
       setMessage(res.message || "Đổi mật khẩu thành công.");
 
       // Redirect sau 2s

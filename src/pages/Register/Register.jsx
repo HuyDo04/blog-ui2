@@ -72,7 +72,6 @@ const Register = () => {
 
     try {
       const result = await register(formData);
-      console.log("REsult:", result);
       
 
       setSuccessMessage(result.message);

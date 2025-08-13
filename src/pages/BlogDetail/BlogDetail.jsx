@@ -64,7 +64,6 @@ const BlogDetail = () => {
                 // Fetch related posts
                 if (fullPost.topicId && fullPost.id) {
                     const related = await getPostsByTopicAndExcludePost(fullPost.topicId, fullPost.id);
-                    console.log("related:", related);
                     
                     setRelatedPosts(related);
                 }
@@ -182,7 +181,6 @@ const BlogDetail = () => {
 
             <div className={styles.authorSection}>
                 <AuthorInfo author={post.author} />
-                {console.log(post.author)};
                 
             </div>
 

@@ -38,7 +38,6 @@ const Profile = () => {
                 setProfile(currentUser);
             } else {
                 // In a real app, you would fetch the profile of the user specified by `username`
-                console.log(`Fetching profile for ${username}...`);
                 // For now, we'll simulate a not found state for other users.
                 setProfile(null);
             }
@@ -143,7 +142,7 @@ const Profile = () => {
                                     src={profile.avatar}
                                     alt={profile.name}
                                     className={styles.avatar}
-                                    fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                    fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                                 />
                                 <div className={styles.basicInfo}>
                                     <h1 className={styles.name}>

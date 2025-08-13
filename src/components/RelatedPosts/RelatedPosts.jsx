@@ -11,7 +11,6 @@ const RelatedPosts = ({
   ...props
 }) => {
   const displayPosts = posts.slice(0, maxPosts);
-  console.log('displayPosts:', displayPosts);
 
   if (loading) {
     return (

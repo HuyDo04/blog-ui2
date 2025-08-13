@@ -97,7 +97,6 @@ const CommentItem = ({
     setShowDeleteConfirm(false);
     setShowDropdown(false);
   };
-  console.log("Author:", author);
   
   return (
     <div
@@ -107,7 +106,8 @@ const CommentItem = ({
     >
       <div className={styles.comment}>
         <div className={styles.avatar}>
-          <FallbackImage src={author.avatar} alt={author.name} fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg" />
+          <FallbackImage src={author.avatar} alt={author.name}
+          fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}/>
         </div>
 
         <div className={styles.content}>

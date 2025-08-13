@@ -49,7 +49,6 @@ const Topic = () => {
                           if (!post.authorId) throw new Error("Missing authorId");
                   
                           const authorData = await getUserById(post.authorId);
-                          console.log(`Author fetched for post ${post.id}:`, authorData);
                           
                           return {
                             ...post,

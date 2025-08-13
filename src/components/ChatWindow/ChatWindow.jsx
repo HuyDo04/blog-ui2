@@ -205,7 +205,7 @@ const ChatWindow = ({
                     src={user?.avatar}
                     alt={user?.name}
                     className={styles.minimizedAvatar}
-                    fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                    fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                 />
                 <span className={styles.minimizedName}>{user?.name}</span>
             </div>
@@ -221,7 +221,7 @@ const ChatWindow = ({
                         src={user?.avatar}
                         alt={user?.name}
                         className={styles.avatar}
-                        fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                        fallbackSrc="/uploads/posts/avatar-default.jpg"
                     />
                     <div className={styles.userDetails}>
                         <span className={styles.name}>{user?.name}</span>

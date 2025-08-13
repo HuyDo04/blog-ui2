@@ -75,8 +75,6 @@ const WritePost = () => {
             navigate("/404"); // Or a dedicated /unauthorized page
             return;
           }
-          console.log("Fetched post for editing:", post.id); // Add this line
-          console.log("post.featuredImage (raw):", post.featuredImage); // Debug log
           setFormData({
             _id: post.id, // Store the actual ID
             title: post.title || "",
@@ -93,7 +91,6 @@ const WritePost = () => {
             setExistingFeaturedImageUrl(imageUrl); // Set existing image URL
           }
           setReadTime(post.readTime || 0);
-          console.log("Giá trị của post.media:", post.media); // Add this line
           setExistingMedia(post.media || []);
         } catch (err) {
           console.error("Error loading post:", err);
@@ -222,11 +219,6 @@ const WritePost = () => {
       </div>
     );
   }
-
-  console.log("isEditing:", isEditing); // Debug log
-  console.log("existingFeaturedImageUrl:", existingFeaturedImageUrl); // Debug log
-  console.log("featuredImageFile:", featuredImageFile); // Debug log
-  console.log("displayImage:", displayImage); // Debug log
 
   return (
     <div className={styles.container}>

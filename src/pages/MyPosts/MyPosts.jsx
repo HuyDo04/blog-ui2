@@ -16,14 +16,12 @@ const MyPosts = () => {
     const [activeTab, setActiveTab] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const currentUser = useSelector(selectCurrentUser);
-    console.log("curent user:", currentUser);
     
     useEffect(() => {
         const fetchUserPosts = async () => {
             setLoading(true);
             try {
                 const response = await getPostsByUserId(currentUser.id);
-                console.log("Response:", response);
                 
                 setPosts(response);
             } catch (error) {
@@ -202,7 +200,6 @@ const MyPosts = () => {
                         <div className={styles.postsGrid}>
                             {filteredPosts.map((post) => (
                                 <div key={post.id} className={styles.postItem}>
-                                    {console.log("post:", post)}
 
                                     <PostCard
                                         title={post.title}

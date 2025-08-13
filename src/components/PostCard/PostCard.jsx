@@ -159,7 +159,7 @@ const PostCard = ({
                                 alt={author.name}
                                 className={styles.authorAvatar}
                                 lazy={true}
-                                fallbackSrc="http://localhost:3000/uploads/posts/avatar-default.jpg"
+                                fallbackSrc={`${import.meta.env.VITE_DEFAULT_AVATAR_URL}/uploads/posts/avatar-default.jpg`}
                             />
                         )}
                         <Link
