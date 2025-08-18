@@ -69,8 +69,6 @@ const Home = () => {
             <section className={styles.hero}>
                 <div className="container">
                     <div className={styles.heroContent}>
-                    hihi
-                    <Chatbot />
                         <div className={styles.heroText}>
                             <h1 className={styles.heroTitle}>
                                 Learn{" "}
@@ -244,6 +242,7 @@ const Home = () => {
                     </div>
                 </section>
             </div>
+            <Chatbot />
         </div>
     );
 };
