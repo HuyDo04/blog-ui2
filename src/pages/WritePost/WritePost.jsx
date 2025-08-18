@@ -208,7 +208,11 @@ const WritePost = () => {
   };
 
   const displayImage = featuredImagePreview || (isEditing && existingFeaturedImageUrl && !featuredImageFile ? existingFeaturedImageUrl : null);
+  console.log("Display Image:", displayImage);
+  console.log("feau:", featuredImagePreview)
+  console.log("isEditing", existingFeaturedImageUrl)
 
+  
   if (!isAuthorized) {
     return (
       <div className={styles.container}>

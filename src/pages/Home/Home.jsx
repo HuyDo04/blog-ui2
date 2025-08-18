@@ -4,6 +4,7 @@ import { TopicList, FeaturedPosts, PostList, Button } from "../../components";
 import styles from "./Home.module.scss";
 import { getTopics } from "@/services/topic.service";
 import { getPosts } from "@/services/post.service";
+import Chatbot from "@/components/Chatbot/Chatbot";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -63,10 +64,13 @@ const Home = () => {
       
     return (
         <div className={styles.home}>
+           
             {/* Hero Section */}
             <section className={styles.hero}>
                 <div className="container">
                     <div className={styles.heroContent}>
+                    hihi
+                    <Chatbot />
                         <div className={styles.heroText}>
                             <h1 className={styles.heroTitle}>
                                 Learn{" "}
